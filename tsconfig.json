@@ -1,6 +1,49 @@
 {
+  // "extends" sets the base TS config from Expo (includes RN + JSX settings)
   "extends": "expo/tsconfig.base",
+
   "compilerOptions": {
-    "strict": true
-  }
+    // ─── Strictness ──────────────────────────────────────────────────
+    "strict": true,                    // Enables all strict type-checks
+    "noImplicitAny": true,             // No implicit 'any' types
+    "noImplicitReturns": true,         // Functions must explicitly return
+    "noUnusedLocals": true,            // Error on unused variables
+    "noUnusedParameters": true,        // Error on unused function params
+    "exactOptionalPropertyTypes": true, // Distinguishes undefined from absent
+
+    // ─── Module Resolution ───────────────────────────────────────────
+    // "bundler" mode is optimal for Metro/Expo — no need for file extensions
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+
+    // ─── Absolute Imports ────────────────────────────────────────────
+    // Enables: import { Button } from '@/components/ui/Button'
+    // instead of: import { Button } from '../../components/ui/Button'
+    // ignoreDeprecations: baseUrl is deprecated in TS6, use this to silence the error
+    // while still supporting legacy path resolution during the TS7 migration window.
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    // ─── JSX ─────────────────────────────────────────────────────────
+    "jsx": "react-jsx",
+    "jsxImportSource": "nativewind",   // Enables className on RN elements
+
+    // ─── Output ──────────────────────────────────────────────────────
+    "noEmit": true,                    // Type-check only; Metro handles bundling
+    "skipLibCheck": true               // Skip checking node_modules types
+  },
+
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.d.ts",
+    "expo-env.d.ts"
+  ],
+
+  "exclude": [
+    "node_modules"
+  ]
 }

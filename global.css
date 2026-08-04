@@ -1,0 +1,14 @@
+/* global.css
+ *
+ * This is the NativeWind/Tailwind entry point.
+ * It must be imported ONCE in app/_layout.tsx.
+ *
+ * These three directives tell PostCSS/Tailwind to inject:
+ * - @tailwind base    → resets and sensible defaults
+ * - @tailwind components → component-level class utilities
+ * - @tailwind utilities  → all the utility classes (flex, p-4, text-lg, etc.)
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

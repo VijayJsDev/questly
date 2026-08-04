@@ -33,6 +33,14 @@ yarn-error.*
 # local env files
 .env*.local
 
+# environment files (commit .env.example instead, never real values)
+.env.development
+.env.production
+.env.staging
+
+# planning/scratch files
+.planning/
+
 # typescript
 *.tsbuildinfo
 
