@@ -2,9 +2,9 @@
 //
 // Zustand store for authentication state.
 //
-// This is a STUB — business logic will be added in a later phase.
-// The store shape and action signatures are defined now so other parts
-// of the app can type-safely reference auth state even before it's wired up.
+// login() is a DEVELOPMENT STUB that creates a local user immediately.
+// Full implementation (SecureStore persistence, onboarding form) comes
+// in the auth feature phase. For now this lets us navigate the entire app.
 
 import { create } from 'zustand';
 
@@ -14,7 +14,6 @@ interface AuthStoreState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  // Actions (stubs — implementation comes in business logic phase)
   login: (name: string) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -25,21 +24,31 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
 
-  login: async (_name: string) => {
-    // TODO: Implement in auth feature phase
-    // Will create a User, persist to SecureStore + AsyncStorage, set isAuthenticated
+  login: async (name: string) => {
     set({ isLoading: true });
-    set({ isLoading: false });
+
+    // Dev stub: create a local user immediately without any network/storage call.
+    // TODO (auth phase): replace with real onboarding + SecureStore persistence.
+    const user: User = {
+      id: `local-${Date.now()}`,
+      name: name || 'Adventurer',
+      createdAt: new Date().toISOString(),
+      totalXP: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+    };
+
+    set({ user, isAuthenticated: true, isLoading: false });
   },
 
   logout: async () => {
-    // TODO: Clear SecureStore, AsyncStorage user data, reset state
+    // TODO (auth phase): clear SecureStore + AsyncStorage
     set({ user: null, isAuthenticated: false });
   },
 
   restoreSession: async () => {
-    // TODO: Read from SecureStore on app launch to restore session
-    set({ isLoading: true });
+    // TODO (auth phase): read token from SecureStore on app launch
+    // For now, every cold launch starts unauthenticated (no persistence yet)
     set({ isLoading: false });
   },
 }));
