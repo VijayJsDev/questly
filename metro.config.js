@@ -1,23 +1,20 @@
 // metro.config.js
 //
-// Metro is React Native's JS bundler (like webpack for RN).
-// withNativeWind wraps the config to add:
-//   - A CSS transformer that processes global.css
-//   - A resolver extension for .css files
-// The `input` option points to our Tailwind entry file.
+// NativeWind v5: withNativewind() no longer needs the { input } option.
+// CSS processing is now handled via PostCSS (@tailwindcss/postcss) configured
+// in postcss.config.mjs — Metro picks it up automatically.
 //
-// react-native-worklets is a peer dependency of react-native-reanimated v4.
-// It must be explicitly listed in resolver.extraNodeModules so Metro can
-// find it when Reanimated imports it through NativeWind's CSS interop chain.
+// react-native-worklets is a peer dep of react-native-reanimated v4.
+// It must be in extraNodeModules so Metro finds it via the Reanimated import chain.
 
 const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
+const { withNativewind } = require('nativewind/metro');
 const path = require('path');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Ensure react-native-worklets resolves correctly
+// Ensure react-native-worklets resolves correctly through Reanimated's import chain
 config.resolver = {
   ...config.resolver,
   extraNodeModules: {
@@ -26,4 +23,4 @@ config.resolver = {
   },
 };
 
-module.exports = withNativeWind(config, { input: './global.css' });
+module.exports = withNativewind(config);

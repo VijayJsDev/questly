@@ -12,9 +12,9 @@
 // NativeWind requires its entry CSS to be imported ONCE at the top of the tree.
 // The root layout is guaranteed to run before any screen, making it the right place.
 
-// CSS side-effect import (processed by NativeWind/Metro, not TypeScript)
-// @ts-expect-error — CSS modules are not typed
+// CSS side-effect import (processed by NativeWind v5 / react-native-css via PostCSS)
 import '../global.css';
+
 
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';

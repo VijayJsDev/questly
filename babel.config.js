@@ -1,18 +1,14 @@
 // babel.config.js
 //
-// WHY THIS ORDER MATTERS:
-// 1. babel-preset-expo: core Expo transform with jsxImportSource set to "nativewind"
-//    so JSX automatically picks up NativeWind's className support without extra imports.
-// 2. nativewind/babel: transforms className props into React Native StyleSheet calls at build time.
-// 3. react-native-reanimated/plugin: MUST be last — it hoists worklet functions to the
-//    UI thread. If placed before other transforms, it can corrupt the worklet AST.
+// NativeWind v5 no longer requires a Babel plugin.
+// The className transform is now handled entirely by PostCSS + react-native-css at runtime.
+// Only babel-preset-expo and the Reanimated plugin (must be last) are needed.
 
 module.exports = function (api) {
   api.cache(true);
   return {
     presets: [
-      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
-      'nativewind/babel',
+      'babel-preset-expo',
     ],
     plugins: [
       // Reanimated plugin MUST be the last plugin

@@ -1,14 +1,61 @@
 /* global.css
  *
- * This is the NativeWind/Tailwind entry point.
- * It must be imported ONCE in app/_layout.tsx.
+ * TailwindCSS v4 entry point — imported once in app/_layout.tsx.
  *
- * These three directives tell PostCSS/Tailwind to inject:
- * - @tailwind base    → resets and sensible defaults
- * - @tailwind components → component-level class utilities
- * - @tailwind utilities  → all the utility classes (flex, p-4, text-lg, etc.)
+ * v4 uses @import directives instead of @tailwind directives.
+ * Custom theme tokens are defined in @theme {} blocks (replaces tailwind.config.js).
+ *
+ * Migrated tokens from tailwind.config.js:
+ *  - Brand colors (primary, accent, success, warning)
+ *  - Surface colors (dark/light theme surfaces)
+ *  - Font families (Inter variants)
+ *  - Border radius extensions
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+/* ─── Questly Custom Theme ──────────────────────────────────────────────────── */
+@theme {
+  /* Brand Colors */
+  --color-primary: #7C6AF7;
+  --color-primary-light: #A89BFF;
+  --color-primary-dark: #5B4FD6;
+
+  --color-accent: #FF6B6B;
+  --color-accent-light: #FF9E9E;
+  --color-accent-dark: #E55555;
+
+  --color-success: #4ECDC4;
+  --color-success-light: #7EDDD6;
+  --color-success-dark: #2BA89F;
+
+  --color-warning: #FFE66D;
+  --color-warning-light: #FFF0A0;
+  --color-warning-dark: #F0C94B;
+
+  /* Dark Theme Surfaces */
+  --color-dark-bg: #0A0A0F;
+  --color-dark-surface: #13131A;
+  --color-dark-elevated: #1C1C28;
+  --color-dark-border: #2A2A3D;
+
+  /* Light Theme Surfaces */
+  --color-light-bg: #F8F8FF;
+  --color-light-surface: #FFFFFF;
+  --color-light-elevated: #F0F0F8;
+  --color-light-border: #E0E0F0;
+
+  /* Typography */
+  --font-sans: Inter_400Regular, System;
+  --font-medium: Inter_500Medium, System;
+  --font-semibold: Inter_600SemiBold, System;
+  --font-bold: Inter_700Bold, System;
+
+  /* Border Radius */
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+}
