@@ -56,9 +56,14 @@ function RootLayoutContent() {
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
         <Stack.Screen
+          name="mission/create-set"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
           name="mission/[id]/edit"
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
+
       </Stack>
     </>
   );

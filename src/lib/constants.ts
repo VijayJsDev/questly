@@ -42,8 +42,15 @@ export const ANIMATION = {
 export const QUERY_KEYS = {
   missions: ['missions'] as const,
   missionById: (id: string) => ['missions', id] as const,
+  missionsBySet: (setId: string) => ['missions', 'set', setId] as const,
+  missionSets: ['mission-sets'] as const,
+  missionSetById: (id: string) => ['mission-sets', id] as const,
+  todaysMissions: ['missions', 'today'] as const,
+  todayCompletions: ['completions', 'today'] as const,
+  completions: ['completions'] as const,
   stats: ['stats'] as const,
   statsDaily: (date: string) => ['stats', 'daily', date] as const,
   statsWeekly: (weekStart: string) => ['stats', 'weekly', weekStart] as const,
   streak: ['streak'] as const,
 } as const;
+
