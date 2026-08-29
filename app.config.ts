@@ -63,8 +63,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
   ],
 
+  owner: 'vijayjsdev',
+
   extra: {
+    ...config.extra,
     appEnv: process.env.EXPO_PUBLIC_APP_ENV ?? 'development',
+    eas: {
+      projectId: 'e5388040-e167-457f-b4c2-1c1b58d5754d',
+    },
   },
 
   experiments: {

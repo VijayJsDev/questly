@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Questly",
-    "slug": "Questly",
+    "slug": "questly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,6 +27,12 @@
       "expo-secure-store",
       "expo-font",
       "expo-splash-screen"
-    ]
+    ],
+    "owner": "vijayjsdev",
+    "extra": {
+      "eas": {
+        "projectId": "e5388040-e167-457f-b4c2-1c1b58d5754d"
+      }
+    }
   }
 }
