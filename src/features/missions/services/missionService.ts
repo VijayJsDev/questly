@@ -1,23 +1,13 @@
 // src/features/missions/services/missionService.ts
 //
-// All AsyncStorage read/write for missions, mission sets, and daily completions.
-// This is the single source of truth for persistence.
-// TanStack Query hooks call these functions — they never touch AsyncStorage directly.
+// API client for missions, mission sets, and daily completions.
+// Connects to the Questly Express backend (which persists to MongoDB Atlas).
+// TanStack Query hooks call these functions — they never make raw fetch calls directly.
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Mission, MissionSet, DailyCompletion } from '../types';
-import { XP_VALUES } from '@/lib/constants';
-
-// ─── Storage Keys ─────────────────────────────────────────────────────────────
-const KEYS = {
-  SETS: 'questly:mission_sets',
-  MISSIONS: 'questly:missions',
-  COMPLETIONS: 'questly:completions',
-} as const;
+import { API_BASE_URL, XP_VALUES } from '@/lib/constants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
 export const todayDateString = (): string => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -31,129 +21,119 @@ export const xpForPriority = (priority: Mission['priority']): number => {
   }
 };
 
+async function handleResponse<T>(res: Response, errorMessage: string): Promise<T> {
+  if (!res.ok) {
+    let errBody = '';
+    try {
+      errBody = await res.text();
+    } catch {
+      // ignore
+    }
+    throw new Error(`${errorMessage} (${res.status}): ${errBody || res.statusText}`);
+  }
+  return (await res.json()) as T;
+}
+
 // ─── Mission Sets ─────────────────────────────────────────────────────────────
 export const getSets = async (): Promise<MissionSet[]> => {
-  const raw = await AsyncStorage.getItem(KEYS.SETS);
-  return raw ? (JSON.parse(raw) as MissionSet[]) : [];
-};
-
-const saveSets = async (sets: MissionSet[]): Promise<void> => {
-  await AsyncStorage.setItem(KEYS.SETS, JSON.stringify(sets));
+  const res = await fetch(`${API_BASE_URL}/api/sets`);
+  return handleResponse<MissionSet[]>(res, 'Failed to fetch mission sets');
 };
 
 export const createSet = async (
   data: Pick<MissionSet, 'name' | 'activeDays'>
 ): Promise<MissionSet> => {
-  const sets = await getSets();
-  const newSet: MissionSet = {
-    id: generateId(),
-    name: data.name,
-    activeDays: data.activeDays,
-    createdAt: new Date().toISOString(),
-  };
-  await saveSets([...sets, newSet]);
-  return newSet;
+  const res = await fetch(`${API_BASE_URL}/api/sets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<MissionSet>(res, 'Failed to create mission set');
 };
 
 export const deleteSet = async (id: string): Promise<void> => {
-  const [sets, missions] = await Promise.all([getSets(), getMissions()]);
-  // Cascade: remove missions belonging to this set
-  const updatedMissions = missions.filter((m) => m.setId !== id);
-  const updatedSets = sets.filter((s) => s.id !== id);
-  await Promise.all([saveSets(updatedSets), saveMissions(updatedMissions)]);
+  const res = await fetch(`${API_BASE_URL}/api/sets/${id}`, {
+    method: 'DELETE',
+  });
+  await handleResponse(res, 'Failed to delete mission set');
+};
+
+export const seedDefaultSetsIfEmpty = async (): Promise<void> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/sets/seed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+      console.warn('Seed default sets response not ok:', res.status);
+    }
+  } catch (err) {
+    console.warn('Failed to seed default sets (server might still be starting):', err);
+  }
 };
 
 // ─── Missions ─────────────────────────────────────────────────────────────────
-export const getMissions = async (): Promise<Mission[]> => {
-  const raw = await AsyncStorage.getItem(KEYS.MISSIONS);
-  return raw ? (JSON.parse(raw) as Mission[]) : [];
-};
-
-const saveMissions = async (missions: Mission[]): Promise<void> => {
-  await AsyncStorage.setItem(KEYS.MISSIONS, JSON.stringify(missions));
+export const getMissions = async (setId?: string): Promise<Mission[]> => {
+  const url = setId
+    ? `${API_BASE_URL}/api/missions?setId=${encodeURIComponent(setId)}`
+    : `${API_BASE_URL}/api/missions`;
+  const res = await fetch(url);
+  return handleResponse<Mission[]>(res, 'Failed to fetch missions');
 };
 
 export const createMission = async (
   data: Pick<Mission, 'title' | 'description' | 'priority' | 'setId'>
 ): Promise<Mission> => {
-  const missions = await getMissions();
-  const newMission: Mission = {
-    id: generateId(),
-    setId: data.setId,
-    title: data.title,
-    ...(data.description ? { description: data.description } : {}),
-    priority: data.priority,
-    xpReward: xpForPriority(data.priority),
-    createdAt: new Date().toISOString(),
-  };
-  await saveMissions([...missions, newMission]);
-  return newMission;
+  const res = await fetch(`${API_BASE_URL}/api/missions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Mission>(res, 'Failed to create mission');
 };
 
 export const deleteMission = async (id: string): Promise<void> => {
-  const missions = await getMissions();
-  await saveMissions(missions.filter((m) => m.id !== id));
+  const res = await fetch(`${API_BASE_URL}/api/missions/${id}`, {
+    method: 'DELETE',
+  });
+  await handleResponse(res, 'Failed to delete mission');
 };
 
 // ─── Daily Completions ────────────────────────────────────────────────────────
-export const getCompletions = async (): Promise<DailyCompletion[]> => {
-  const raw = await AsyncStorage.getItem(KEYS.COMPLETIONS);
-  return raw ? (JSON.parse(raw) as DailyCompletion[]) : [];
-};
-
-const saveCompletions = async (completions: DailyCompletion[]): Promise<void> => {
-  await AsyncStorage.setItem(KEYS.COMPLETIONS, JSON.stringify(completions));
-};
-
 export const getTodayCompletions = async (): Promise<DailyCompletion[]> => {
-  const all = await getCompletions();
   const today = todayDateString();
-  return all.filter((c) => c.completedDate === today);
+  const res = await fetch(`${API_BASE_URL}/api/completions/today?date=${today}`);
+  return handleResponse<DailyCompletion[]>(res, "Failed to fetch today's completions");
+};
+
+export const getCompletions = async (): Promise<DailyCompletion[]> => {
+  return getTodayCompletions();
 };
 
 export const addCompletion = async (
   missionId: string,
   xpEarned: number
 ): Promise<DailyCompletion> => {
-  const completions = await getCompletions();
   const today = todayDateString();
-  // Idempotent — no double-completion for the same mission on the same day
-  const existing = completions.find(
-    (c) => c.missionId === missionId && c.completedDate === today
-  );
-  if (existing) return existing;
-
-  const newCompletion: DailyCompletion = { missionId, completedDate: today, xpEarned };
-  await saveCompletions([...completions, newCompletion]);
-  return newCompletion;
+  const res = await fetch(`${API_BASE_URL}/api/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      missionId,
+      xpEarned,
+      completedDate: today,
+    }),
+  });
+  return handleResponse<DailyCompletion>(res, 'Failed to record completion');
 };
 
 export const removeCompletion = async (missionId: string): Promise<void> => {
-  const completions = await getCompletions();
   const today = todayDateString();
-  await saveCompletions(
-    completions.filter((c) => !(c.missionId === missionId && c.completedDate === today))
+  const res = await fetch(
+    `${API_BASE_URL}/api/completions/${encodeURIComponent(missionId)}?date=${today}`,
+    {
+      method: 'DELETE',
+    }
   );
-};
-
-// ─── Seeding ──────────────────────────────────────────────────────────────────
-// Seeds default Weekday + Weekend mission sets on first app launch.
-// Only runs if no sets exist yet.
-export const seedDefaultSetsIfEmpty = async (): Promise<void> => {
-  const existing = await getSets();
-  if (existing.length > 0) return;
-
-  const weekdaySet: MissionSet = {
-    id: generateId(),
-    name: 'Weekday Missions',
-    activeDays: [1, 2, 3, 4, 5], // Mon–Fri
-    createdAt: new Date().toISOString(),
-  };
-  const weekendSet: MissionSet = {
-    id: generateId(),
-    name: 'Weekend Missions',
-    activeDays: [0, 6], // Sun, Sat
-    createdAt: new Date().toISOString(),
-  };
-  await saveSets([weekdaySet, weekendSet]);
+  await handleResponse(res, 'Failed to remove completion');
 };

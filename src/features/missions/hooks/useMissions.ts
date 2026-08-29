@@ -9,17 +9,14 @@ import type { MissionFormData } from '../types';
 export const useMissions = () =>
   useQuery({
     queryKey: QUERY_KEYS.missions,
-    queryFn: getMissions,
+    queryFn: () => getMissions(),
   });
 
 // ─── Read — missions for a specific set ───────────────────────────────────────
 export const useMissionsBySet = (setId: string) =>
   useQuery({
     queryKey: QUERY_KEYS.missionsBySet(setId),
-    queryFn: async () => {
-      const all = await getMissions();
-      return all.filter((m) => m.setId === setId);
-    },
+    queryFn: () => getMissions(setId),
     enabled: !!setId,
   });
 

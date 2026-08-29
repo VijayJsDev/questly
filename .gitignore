@@ -37,6 +37,8 @@ yarn-error.*
 .env.development
 .env.production
 .env.staging
+server/.env
+server/dist/
 
 # planning/scratch files
 .planning/

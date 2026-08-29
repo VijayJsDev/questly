@@ -7,6 +7,9 @@
 export const APP_NAME = 'Questly';
 export const APP_VERSION = '1.0.0';
 
+// ─── API Configuration ────────────────────────────────────────────────────────
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000';
+
 // ─── Gamification ─────────────────────────────────────────────────────────────
 export const XP_VALUES = {
   MISSION_COMPLETE_LOW: 10,

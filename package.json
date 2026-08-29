@@ -51,7 +51,8 @@
     "web": "expo start --web",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "server:dev": "npm --prefix server run dev"
   },
   "overrides": {
     "lightningcss": "1.30.1"
